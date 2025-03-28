@@ -10,6 +10,7 @@ class GameScene extends Phaser.Scene {
 
   preload(this: Phaser.Scene) {
     this.load.image('tileset', 'assets/tileset.png');
+    this.load.json('defaultMap', 'assets/map.json');
     
     // Adiciona input de arquivo para upload
     const fileInput = document.createElement('input');
@@ -35,7 +36,14 @@ class GameScene extends Phaser.Scene {
   }
 
   create(this: Phaser.Scene) {
-    (this as GameScene).loadMap();
+    // Carrega o mapa padrão do arquivo map.json
+    const mapData = this.cache.json.get('defaultMap');
+    if (mapData) {
+      (this as GameScene).updateMap(mapData);
+    } else {
+      // Fallback para o mapa vazio se o arquivo não for carregado
+      (this as GameScene).loadMap();
+    }
   }
   
   private loadMap() {
