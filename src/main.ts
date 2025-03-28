@@ -11,7 +11,7 @@ class GameScene extends Phaser.Scene {
   }
 
   preload(this: Phaser.Scene) {
-    this.load.image(this.tilesetKey, this.tilesetSource);
+    this.load.image((this as GameScene).tilesetKey, (this as GameScene).tilesetSource);
     this.load.json('defaultMap', 'assets/map.json');
     
     // Adiciona input de arquivo para upload do mapa JSON
