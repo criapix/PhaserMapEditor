@@ -3,26 +3,29 @@ import Phaser from 'phaser';
 class GameScene extends Phaser.Scene {
   private currentMap?: Phaser.Tilemaps.Tilemap;
   private currentTileset?: Phaser.Tilemaps.Tileset;
+  private tilesetKey: string = 'tileset';
+  private tilesetSource: string = 'assets/tileset.png';
   
   constructor() {
     super('GameScene');
   }
 
   preload(this: Phaser.Scene) {
-    this.load.image('tileset', 'assets/tileset.png');
+    this.load.image(this.tilesetKey, this.tilesetSource);
     this.load.json('defaultMap', 'assets/map.json');
     
-    // Adiciona input de arquivo para upload
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.json';
-    fileInput.style.position = 'absolute';
-    fileInput.style.top = '10px';
-    fileInput.style.left = '10px';
-    fileInput.style.zIndex = '1000';
-    document.getElementById('app')?.appendChild(fileInput);
+    // Adiciona input de arquivo para upload do mapa JSON
+    const mapFileInput = document.createElement('input');
+    mapFileInput.type = 'file';
+    mapFileInput.accept = '.json';
+    mapFileInput.style.position = 'absolute';
+    mapFileInput.style.top = '10px';
+    mapFileInput.style.left = '10px';
+    mapFileInput.style.zIndex = '1000';
+    mapFileInput.title = 'Carregar mapa JSON';
+    document.getElementById('app')?.appendChild(mapFileInput);
     
-    fileInput.addEventListener('change', (event) => {
+    mapFileInput.addEventListener('change', (event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
       if (file) {
         const reader = new FileReader();
@@ -31,6 +34,28 @@ class GameScene extends Phaser.Scene {
           (this as GameScene).updateMap(json);
         };
         reader.readAsText(file);
+      }
+    });
+    
+    // Adiciona input de arquivo para upload do tileset
+    const tilesetFileInput = document.createElement('input');
+    tilesetFileInput.type = 'file';
+    tilesetFileInput.accept = '.png,.jpg,.jpeg';
+    tilesetFileInput.style.position = 'absolute';
+    tilesetFileInput.style.top = '10px';
+    tilesetFileInput.style.left = '150px';
+    tilesetFileInput.style.zIndex = '1000';
+    tilesetFileInput.title = 'Carregar tileset';
+    document.getElementById('app')?.appendChild(tilesetFileInput);
+    
+    tilesetFileInput.addEventListener('change', (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          (this as GameScene).updateTileset(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
       }
     });
   }
@@ -62,7 +87,7 @@ class GameScene extends Phaser.Scene {
       tileHeight: 32
     });
     
-    this.currentTileset = this.currentMap.addTilesetImage('tileset', 'tileset', 32, 32) as Phaser.Tilemaps.Tileset;
+    this.currentTileset = this.currentMap.addTilesetImage('tileset', this.tilesetKey, 32, 32) as Phaser.Tilemaps.Tileset;
     this.currentMap.createLayer(0, this.currentTileset as Phaser.Tilemaps.Tileset, 0, 0);
   }
   
@@ -92,7 +117,7 @@ class GameScene extends Phaser.Scene {
       });
       
       // Adiciona o tileset ao mapa
-      this.currentTileset = this.currentMap.addTilesetImage('tileset', 'tileset', 32, 32) as Phaser.Tilemaps.Tileset;
+      this.currentTileset = this.currentMap.addTilesetImage('tileset', this.tilesetKey, 32, 32) as Phaser.Tilemaps.Tileset;
       
       // Cria as camadas diretamente a partir dos dados do JSON
       for (const layerData of json.layers) {
@@ -140,6 +165,38 @@ class GameScene extends Phaser.Scene {
       console.error('Erro ao carregar o mapa:', error);
     }
   }  
+  
+  private updateTileset(dataUrl: string): void {
+    // Cria uma nova chave para o tileset
+    const newTilesetKey = 'tileset_' + Date.now();
+    
+    // Carrega a nova imagem do tileset
+    this.load.image(newTilesetKey, dataUrl);
+    
+    // Quando a carga estiver completa, atualiza o tileset no mapa
+    this.load.once('complete', () => {
+      // Atualiza a chave do tileset atual
+      this.tilesetKey = newTilesetKey;
+      
+      // Se houver um mapa carregado, recarrega-o com o novo tileset
+      if (this.currentMap) {
+        // Guarda os dados do mapa atual
+        const mapData = this.cache.json.get('defaultMap');
+        
+        // Recarrega o mapa com o novo tileset
+        if (mapData) {
+          this.updateMap(mapData);
+        } else {
+          this.loadMap();
+        }
+      }
+      
+      console.log('Tileset atualizado com sucesso!');
+    });
+    
+    // Inicia o carregamento
+    this.load.start();
+  }
 }
 
 const config: Phaser.Types.Core.GameConfig = {
