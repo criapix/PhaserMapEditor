@@ -27,7 +27,7 @@ class GameScene extends Phaser.Scene {
         const reader = new FileReader();
         reader.onload = (e) => {
           const json = JSON.parse(e.target?.result as string);
-          this.updateMap(json);
+          (this as GameScene).updateMap(json);
         };
         reader.readAsText(file);
       }
@@ -35,7 +35,7 @@ class GameScene extends Phaser.Scene {
   }
 
   create(this: Phaser.Scene) {
-    this.loadMap();
+    (this as GameScene).loadMap();
   }
   
   private loadMap() {
@@ -54,11 +54,11 @@ class GameScene extends Phaser.Scene {
       tileHeight: 32
     });
     
-    this.currentTileset = this.currentMap.addTilesetImage('tileset', 'tileset', 32, 32);
+    this.currentTileset = this.currentMap.addTilesetImage('tileset', 'tileset', 32, 32) as Phaser.Tilemaps.Tileset;
     this.currentMap.createLayer(0, this.currentTileset as Phaser.Tilemaps.Tileset, 0, 0);
   }
   
-  private updateMap(json: any) {
+  private updateMap(json: any): void {
     // Remove o mapa atual
     if (this.currentMap) {
       this.currentMap.destroy();
@@ -84,7 +84,7 @@ class GameScene extends Phaser.Scene {
       });
       
       // Adiciona o tileset ao mapa
-      this.currentTileset = this.currentMap.addTilesetImage('tileset', 'tileset', 32, 32);
+      this.currentTileset = this.currentMap.addTilesetImage('tileset', 'tileset', 32, 32) as Phaser.Tilemaps.Tileset;
       
       // Cria as camadas diretamente a partir dos dados do JSON
       for (const layerData of json.layers) {
