@@ -76,10 +76,10 @@ class GameScene extends Phaser.Scene {
     }
     
     // Cria o seletor de tiles
-    this.createTileSelector();
+    (this as GameScene).createTileSelector();
     
     // Cria o marcador de tile selecionado
-    this.createSelectedTileMarker();
+    (this as GameScene).createSelectedTileMarker();
   }
   
   private loadMap() {
@@ -150,11 +150,13 @@ class GameScene extends Phaser.Scene {
       const tileY = this.currentMap.worldToTileY(pointer.y);
       
       // Posiciona o marcador na posição do tile
-      if (tileX >= 0 && tileY >= 0 && tileX < this.currentMap.width && tileY < this.currentMap.height) {
+      if (tileX !== null && tileY !== null && tileX >= 0 && tileY >= 0 && tileX < this.currentMap.width && tileY < this.currentMap.height) {
         const worldX = this.currentMap.tileToWorldX(tileX);
         const worldY = this.currentMap.tileToWorldY(tileY);
         
+        if (worldX !== null && worldY !== null) {
         this.selectedTileMarker!.setPosition(worldX, worldY);
+      }
         this.selectedTileMarker!.setVisible(true);
       } else {
         this.selectedTileMarker!.setVisible(false);
@@ -172,8 +174,10 @@ class GameScene extends Phaser.Scene {
         const tileY = this.currentMap.worldToTileY(pointer.y);
         
         // Coloca o tile selecionado na posição clicada
-        if (tileX >= 0 && tileY >= 0 && tileX < this.currentMap.width && tileY < this.currentMap.height) {
-          this.currentLayer.putTileAt(this.selectedTileIndex, tileX, tileY);
+        if (tileX !== null && tileY !== null && tileX >= 0 && tileY >= 0 && tileX < this.currentMap.width && tileY < this.currentMap.height) {
+          if (tileX !== null && tileY !== null) {
+          this.currentLayer?.putTileAt(this.selectedTileIndex, tileX, tileY);
+        }
           console.log(`Tile ${this.selectedTileIndex} colocado em (${tileX}, ${tileY})`);
         }
       }
@@ -244,7 +248,7 @@ class GameScene extends Phaser.Scene {
             
             // Define a camada atual como a primeira camada de tiles encontrada
             if (layerData.type === 'tilelayer' && !this.currentLayer) {
-              this.currentLayer = layer;
+              this.currentLayer = layer || undefined;
             }
             
             // Preenche a camada com os dados do JSON
